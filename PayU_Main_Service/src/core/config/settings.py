@@ -13,6 +13,9 @@ class Settings(BaseSettings):
     refresh_token_expire_days: int
     algorithm: str
 
+    auth_service_url: str
+    invoice_service_url: str
+
     class Config:
         env_file=".env"
 

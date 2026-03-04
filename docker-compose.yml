@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
 
   db:
@@ -8,36 +6,72 @@ services:
     restart: always
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: payu_db
-      POSTGRES_DB: payu
+      POSTGRES_PASSWORD: payu
+      POSTGRES_DB: payu_db
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
-  backend:
+  auth_service:
     build:
       context: ./PayU_Auth_Service
-    container_name: payu_backend
+    container_name: payu_auth
     restart: always
     depends_on:
       - db
     environment:
       DB_USER: postgres
-      DB_PASSWORD: payu_db
+      DB_PASSWORD: payu
       DB_HOST: db
       DB_PORT: 5432
-      DB_NAME: payu
+      DB_NAME: payu_db
+    ports:
+      - "8001:8001"
+
+  processing_service:
+    build:
+      context: ./PayU_Processing_Service
+    container_name: payu_processing
+    restart: always
+    depends_on:
+      - db
+    environment:
+      DB_USER: postgres
+      DB_PASSWORD: payu
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: payu_db
+    ports:
+      - "8002:8002"
+
+  main_service:
+    build:
+      context: ./PayU_Main_Service
+    container_name: payu_main
+    restart: always
+    depends_on:
+      - db
+      - auth_service
+      - processing_service
+    environment:
+      DB_USER: postgres
+      DB_PASSWORD: payu
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: payu_db
+      AUTH_SERVICE_URL: http://payu_auth:8001
+      INVOICE_SERVICE_URL: http://payu_processing:8002
     ports:
       - "8000:8000"
 
   frontend:
     build:
-      context: ./PayU-Frontend
+      context: ./PayU_Frontend
     container_name: payu_frontend
     restart: always
     depends_on:
-      - backend
+      - main_service
     ports:
       - "5173:80"
 

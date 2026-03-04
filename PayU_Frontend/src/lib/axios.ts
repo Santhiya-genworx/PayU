@@ -1,9 +1,8 @@
 import axios from "axios";
-import { authApi } from "../config/env";
+import { apiUrl } from "../config/env";
 
 const api = axios.create({
-    baseURL: authApi,
-    
+    baseURL: apiUrl,
     withCredentials: true
 });
 

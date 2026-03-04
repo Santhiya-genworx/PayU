@@ -3,9 +3,6 @@ from src.data.clients.database import Base, engine
 from src.api.rest.routes.user_router import user_router
 from src.api.rest.routes.health import health_router
 from src.api.rest.routes.refresh import refresh_router
-from src.data.models.user_model import User
-from src.data.models.token_model import RefreshToken
-from src.data.models.log_model import Logs
 
 app_router = APIRouter()
 

@@ -4,14 +4,17 @@ import Toast from "../../../components/common/toast";
 import { login } from "../slices/authSlice";
 import { useNavigate } from "react-router-dom";
 import { useAppDispatch } from "../hooks/authHook";
+import type { ToastState } from "../../../types/toast";
 
 function Login() {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
 
-  const [showToast, setShowToast] = useState(false);
-  const [message, setMessage] = useState("");
-  const [msgType, setMsgType] = useState<"info" | "success" | "error">("info");
+  const [toast, setToast] = useState<ToastState>({
+    visible: false,
+    message: "",
+    type: "info",
+  });
 
   const [formData, setFormData] = useState({
     email: "",
@@ -26,23 +29,29 @@ function Login() {
     e.preventDefault();
 
     if(!formData.email || !formData.password) {
-      setMessage("Email and Password are required");
-      setMsgType("error");
-      setShowToast(true);
+      setToast({
+        visible: true,
+        message: "Email and Password are required",
+        type: "error",
+      });
       return;
     }
 
     try {
       await dispatch(login(formData)).unwrap();
-      setMessage("Login successful!");
-      setMsgType("success");
-      setShowToast(true);
+      setToast({
+        visible: true,
+        message: "Login successful!",
+        type: "success",
+      });
       setTimeout(()=>navigate("/dashboard"), 2500);
     }
     catch (error) {
-      setMessage("Login failed. Try again!");
-      setMsgType("error");
-      setShowToast(true);
+      setToast({
+        visible: true,
+        message: "Login failed. Try again!",
+        type: "error",
+      });
     }
   }
 
@@ -102,7 +111,7 @@ function Login() {
         <p className="mt-7 text-xs text-slate-400 text-center leading-relaxed">&copy; 2026 PayU · Accounts Payable Assistant <br /> For access, contact your system administrator.</p>
       </div>
 
-      {showToast && (<Toast message={message} type={msgType} onClose={() => setShowToast(false)} />)}
+      {toast.visible && (<Toast message={toast.message} type={toast.type} onClose={() => setToast({visible: false, message: "", type:"info"})} />)}
     </>
   );
 }

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import "./toast.css"
 
-type ToastType = "success" | "error" | "info";
+export type ToastType = "success" | "error" | "info";
 
 interface ToastProps {
   message: string;
