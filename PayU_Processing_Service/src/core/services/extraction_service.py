@@ -1,6 +1,5 @@
 import base64
 import os
-from fastapi import UploadFile
 import fitz
 from src.control.graph import invoke_graph
 
@@ -13,9 +12,9 @@ def detect_file_type(file_path: str) -> str:
     else:
         return "unsupported"
     
-async def extract_pdf(file_bytes: bytes) -> str:
+async def extract_pdf(file_path: str) -> str:
     try:
-        doc = fitz.open(stream=file_bytes, filetype="pdf")
+        doc = fitz.open(file_path)
         text = ""
         for page in doc:
             text += page.get_text("text")
@@ -28,23 +27,25 @@ async def extract_pdf(file_bytes: bytes) -> str:
     except Exception as e:
         raise Exception(f"PDF extraction failed: {str(e)}")
 
-async def extract_image(file_bytes: bytes) -> str:
+async def extract_image(file_path: str) -> str:
     try:
+        file_bytes = None
+        with open(file_path, "rb") as f:
+            file_bytes = f.read()
         return base64.b64encode(file_bytes).decode("utf-8")
 
     except Exception as e:
         raise Exception(f"Image Processing failed: {str(e)}")
 
-async def extract_text_from_document(file: UploadFile, document_type: str):
+async def extract_text_from_document(file_path: str, document_type: str):
     try:
-        file_data = await file.read()
-        file_type = detect_file_type(file.filename)
+        file_type = detect_file_type(file_path)
         raw_text = ""
         
         if file_type == "pdf":
-            raw_text = await extract_pdf(file_data)
+            raw_text = await extract_pdf(file_path)
         elif file_type == "image":
-            raw_text = await extract_image(file_data)
+            raw_text = await extract_image(file_path)
         else:
             raise Exception(f"Unsupported file type: {file_type}")
 

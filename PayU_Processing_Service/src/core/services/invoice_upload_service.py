@@ -10,7 +10,7 @@ from src.data.repositories.base_repository import commit_transaction, delete_dat
 from src.schemas.invoice_schema import InvoiceRequest
 from src.utils.file_upload import upload
 
-async def uploadInvoice(invoice: InvoiceRequest, file: UploadFile, db: AsyncSession = Depends(get_db)):
+async def uploadInvoice(invoice: InvoiceRequest, file_url: str, db: AsyncSession = Depends(get_db)):
     try:
         # Check Vendor Exists
         vendor = await get_data_by_any(Vendor, db, email=invoice.vendor.email)
@@ -52,7 +52,7 @@ async def uploadInvoice(invoice: InvoiceRequest, file: UploadFile, db: AsyncSess
             "discount_amount": invoice.discount_amount,
             "total_amount": invoice.total_amount,
             "status": "pending",
-            "file_url": await upload(file, "invoice")
+            "file_url": file_url
         }
         await insert_data(Invoice, db, **data)
 
@@ -80,7 +80,7 @@ async def uploadInvoice(invoice: InvoiceRequest, file: UploadFile, db: AsyncSess
         await db.rollback()
         raise HTTPException(status_code=500, detail=f"Unexpected error: {str(err)}")
     
-async def overrideInvoice(invoice: InvoiceRequest, file: UploadFile, db: AsyncSession = Depends(get_db)):
+async def overrideInvoice(invoice: InvoiceRequest, file_url: str, db: AsyncSession = Depends(get_db)):
     try:
         # Check Vendor Exists
         vendor = await get_data_by_any(Vendor, db, email=invoice.vendor.email)
@@ -114,7 +114,7 @@ async def overrideInvoice(invoice: InvoiceRequest, file: UploadFile, db: AsyncSe
             "discount_amount": invoice.discount_amount,
             "total_amount": invoice.total_amount,
             "status": invoice.status.value,
-            "file_url": await upload(file, "invoice")
+            "file_url": file_url
         }
         await update_data_by_any(Invoice, db, {"invoice_id": invoice.invoice_id}, **updated_data)
 

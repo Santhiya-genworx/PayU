@@ -9,7 +9,7 @@ from src.data.repositories.base_repository import commit_transaction, delete_dat
 from src.schemas.purchase_order_schema import PurchaseOrderRequest
 from src.utils.file_upload import upload
 
-async def uploadPurchaseOrder(po: PurchaseOrderRequest, file: UploadFile, db: AsyncSession = Depends(get_db)):
+async def uploadPurchaseOrder(po: PurchaseOrderRequest, file_url: str, db: AsyncSession = Depends(get_db)):
     try:
         # Check Vendor Exists
         vendors = await get_data_by_any(Vendor, db, email=po.vendor.email)
@@ -53,7 +53,7 @@ async def uploadPurchaseOrder(po: PurchaseOrderRequest, file: UploadFile, db: As
             "total_amount": po.total_amount,
             "ordered_date": po.ordered_date,
             "status": "pending",
-            "file_url": await upload(file, "purchase orders")
+            "file_url": file_url
         }
         await insert_data(PurchaseOrder, db, **po_data)
 
@@ -140,4 +140,4 @@ async def overridePurchaseOrder(po: PurchaseOrderRequest, db: AsyncSession = Dep
 
     except Exception as err:
         await db.rollback()
-        raise HTTPException(status_code=500, detail=f"Unexpected error: {str(err)}")
+        raise HTTPException(status_code=500, detail=f"Unexpected error: {str(err)}") 
